@@ -11,6 +11,10 @@ import UIKit
 class SnakeHead:SnakeBodyPart{
     override init(atPoint point:CGPoint){
         super.init(atPoint: point)
+        // задаем значение
+        self.physicsBody?.categoryBitMask = CollisionCategories.SnakeHead
+        // C чем может контактировать 
+        self.physicsBody?.contactTestBitMask = CollisionCategories.EdgeBody | CollisionCategories.Apple | CollisionCategories.Snake
     }
     
     required init?(coder aDecoder: NSCoder) {

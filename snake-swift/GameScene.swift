@@ -8,10 +8,25 @@
 import SpriteKit
 import GameplayKit
 
+//сдвиг числа
+struct CollisionCategories{
+    static let Snake:UInt32 = 0x1 << 0 //001 2
+    static let SnakeHead:UInt32 = 0x1 << 1 //0010 4
+    static let Apple:UInt32 = 0x1 << 2 // 0100 8
+    static let EdgeBody:UInt32 = 0x1 << 3 // 1000 16
+}
+
 class GameScene: SKScene {
     
     // переменная под экземпляр змеи
     var snake:Snake?
+    
+    // Счётчик
+    var scoreLabel: SKLabelNode?
+    var score: Int {
+        get {
+        return Apple.countInit - 1
+    }}
     
     override func didMove(to view: SKView) {
         // создаем фон
@@ -38,6 +53,12 @@ class GameScene: SKScene {
         // добавление кнопки на сцену
         self.addChild(counterClockwiseButton)
         
+        // Добавляю счет
+        scoreLabel = SKLabelNode(fontNamed: "Chalkduster")
+        scoreLabel!.text = "Score: \(score)"
+        scoreLabel!.position = CGPoint(x: view.scene!.frame.midX, y: view.scene!.frame.minY + 40)
+        addChild(scoreLabel!)
+        
         //создаем кнопку2
         let сlockwiseButton = SKShapeNode()
         сlockwiseButton.path = UIBezierPath(ovalIn: CGRect(x: 0, y: 0, width: 45, height: 45 )).cgPath
@@ -58,6 +79,9 @@ class GameScene: SKScene {
         // Включаем столкновения
         self.physicsWorld.contactDelegate = self
         
+        // с чем может контактировать
+        self.physicsBody?.categoryBitMask = CollisionCategories.EdgeBody
+        self.physicsBody?.collisionBitMask = CollisionCategories.Snake | CollisionCategories.SnakeHead
         
     }
     
@@ -71,6 +95,7 @@ class GameScene: SKScene {
                 return
             }
             
+            //В нажатом состоянии
             touchNode.fillColor = .red
             
             // Подключаем функции поворота
@@ -112,8 +137,20 @@ class GameScene: SKScene {
         
         let apple = Apple(position: CGPoint(x: randX, y: randy))
         
+        
         // добавляем на сцену
         self.addChild(apple)
+        
+        // Обновляю счет игры
+        scoreLabel!.text = "Score: \(score)"
+    }
+    
+    // Рестарт игры
+    func restart(){
+        Apple.countInit = 0
+        createApple()
+        snake = Snake(atPoint: CGPoint(x: view!.scene!.frame.midX, y: view!.scene!.frame.midY))
+        self.addChild(snake!)
     }
 }
 
@@ -121,6 +158,37 @@ class GameScene: SKScene {
 extension GameScene:SKPhysicsContactDelegate{
     
     func didBegin(_ contact: SKPhysicsContact) {
+        // Логическая суммуа на примере головы и яблока
+        let bodyes = contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask // 12
         
+        let collisionObject = bodyes - CollisionCategories.SnakeHead //12-4 = 8
+        
+        switch collisionObject{
+        case CollisionCategories.Apple:// 8
+            let apple = contact.bodyA.node is Apple ? contact.bodyA.node : contact.bodyB.node
+            snake!.addBody()
+            apple?.removeFromParent()
+            createApple()
+            // TODO:  ДЗ
+        case CollisionCategories.EdgeBody:
+            // удаляем змею
+            snake?.removeFromParent()
+            // удаляем яблоко
+            let apple = self.childNode(withName: "apple")
+            apple?.removeFromParent()
+            
+            // Алерт
+            let alert = UIAlertController(title: "SCORE: \(score)", message: "restart ?", preferredStyle: UIAlertController.Style.alert)
+            let action = UIAlertAction(title: "Ok", style: .default) { action in
+                self.restart()
+            }
+            alert.addAction(action)
+            
+            if let vc = self.scene?.view?.window?.rootViewController {
+                vc.present(alert, animated: true, completion: nil)
+            }
+        default:
+            break
+        }
     }
 }

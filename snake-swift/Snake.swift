@@ -8,11 +8,13 @@
 import UIKit
 import SpriteKit
 
+
+
 // общий класс змеи
 class Snake:SKShapeNode{
     // тело змеи
     var body = [SnakeBodyPart]()
-    let moveSpeed:CGFloat = 60.0
+    let moveSpeed:CGFloat = 100.0
     var angle:CGFloat = 0.0
     
     init(atPoint point:CGPoint){
@@ -30,9 +32,17 @@ class Snake:SKShapeNode{
     
     func addBody(){
         // экземпляр тела
-        let newBodyPart = SnakeBodyPart(atPoint: CGPoint(x: body[0].position.x, y: body[0].position.y))
+        let newBodyPart = SnakeBodyPart(atPoint: CGPoint(x: body[body.count - 1].position.x, y: body[body.count - 1].position.y))
         body.append(newBodyPart)
         addChild(newBodyPart)
+        
+        // Меняет цвет на цвет скушанного яблока для каждой части тела
+        let color = Apple.color
+        for snakeBody in body {
+            let snakeBodyPart = childNode(withName: snakeBody.name!) as! SKShapeNode
+            snakeBodyPart.fillColor = color
+            snakeBody.strokeColor = color
+        }
     }
     
     // Передвижение тела
@@ -71,6 +81,7 @@ class Snake:SKShapeNode{
         c.run(moveAction)
     }
     
+    // повороты змейки
     func moveClockwise(){
         angle += CGFloat(Double.pi / 2)
     }
