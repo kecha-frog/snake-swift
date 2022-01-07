@@ -56,7 +56,7 @@ class GameScene: SKScene {
         // Добавляю счет
         scoreLabel = SKLabelNode(fontNamed: "Chalkduster")
         scoreLabel!.text = "Score: \(score)"
-        scoreLabel!.position = CGPoint(x: view.scene!.frame.midX, y: view.scene!.frame.minY + 40)
+        scoreLabel!.position = CGPoint(x: view.scene!.frame.midX, y: view.scene!.frame.maxY - 80)
         addChild(scoreLabel!)
         
         //создаем кнопку2
